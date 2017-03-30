@@ -11,13 +11,18 @@
         <groupId>org.hibernate.ogm</groupId>
         <artifactId>hibernate-ogm-parent</artifactId>
         <version>5.2.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
   
     <artifactId>hibernate-ogm-neoemf</artifactId>
+    <packaging>jar</packaging>
     
     <name>Hibernate OGM for NeoEmf</name>
     <description>Persist objects in NeoEmf</description>
-  
+    <properties>
+        <neoemf.version>1.0.1</neoemf.version>
+        <emf.version>2.12.0</emf.version>        
+    </properties>
     <build>
         <testResources>
             <testResource>
@@ -58,7 +63,29 @@
         <dependency>
             <groupId>fr.inria.atlanmod.neoemf</groupId>
             <artifactId>neoemf</artifactId>
-            <version>1.0.1</version>
+            <version>${neoemf.version}</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+        <groupId>fr.inria.atlanmod.neoemf</groupId>
+	        <artifactId>neoemf-core</artifactId>
+	        <version>${neoemf.version}</version>
+	    </dependency>
+        <dependency>
+            <groupId>org.eclipse.emf</groupId>
+            <artifactId>org.eclipse.emf.common</artifactId>
+            <version>${emf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.emf</groupId>
+            <artifactId>org.eclipse.emf.ecore</artifactId>
+            <version>${emf.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.emf</groupId>
+            <artifactId>org.eclipse.emf.ecore.xmi</artifactId>
+            <version>${emf.version}</version>
         </dependency>
 
         <!-- For tests with mass indexer -->
