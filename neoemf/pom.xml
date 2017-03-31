@@ -15,7 +15,6 @@
     </parent>
   
     <artifactId>hibernate-ogm-neoemf</artifactId>
-    <packaging>jar</packaging>
     
     <name>Hibernate OGM for NeoEmf</name>
     <description>Persist objects in NeoEmf</description>
@@ -24,12 +23,6 @@
         <emf.version>2.12.0</emf.version>        
     </properties>
     <build>
-        <testResources>
-            <testResource>
-                <directory>src/test/resources</directory>
-                <filtering>true</filtering>
-            </testResource>
-        </testResources>
         <plugins>
             <plugin>
                 <groupId>org.bsc.maven</groupId>
@@ -44,11 +37,51 @@
 	            </configuration>
 	        </plugin>
 	        <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>animal-sniffer-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>check-java-api-signature</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+	        <plugin>
 	             <artifactId>maven-checkstyle-plugin</artifactId>
 	        </plugin>
 	    </plugins>
-  </build>
-  <dependencies>
+    </build>
+  
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>hibernate-ogm-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- Overriding the version used for tests in OGM with the one used by the NeoEMF driver -->
+            <dependency>
+                <groupId>commons-logging</groupId>
+			    <artifactId>commons-logging</artifactId>
+			    <version>1.2</version>
+            </dependency>
+			<dependency>
+                <groupId>commons-io</groupId>
+				<artifactId>commons-io</artifactId>
+				<version>2.5</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+  
+    <dependencies>
         <!-- Compile -->
         <dependency>
             <groupId>org.hibernate.ogm</groupId>
@@ -60,6 +93,7 @@
             <!-- "provided" is used as "compile-only" here; It's NOT needed at runtime -->
             <scope>provided</scope>
         </dependency>
+        <!-- NeoEmf and Emf -->
         <dependency>
             <groupId>fr.inria.atlanmod.neoemf</groupId>
             <artifactId>neoemf</artifactId>
@@ -81,47 +115,12 @@
             <artifactId>org.eclipse.emf.ecore</artifactId>
             <version>${emf.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.eclipse.emf</groupId>
             <artifactId>org.eclipse.emf.ecore.xmi</artifactId>
             <version>${emf.version}</version>
         </dependency>
-
-        <!-- For tests with mass indexer -->
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-search-orm</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- RESTEasy and Jackson -->
-        <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-jaxrs</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-jackson2-provider</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.parboiled</groupId>
-            <artifactId>parboiled-java</artifactId>
-        </dependency>
-
+    
         <!-- Testing -->
         <dependency>
             <groupId>junit</groupId>
@@ -135,26 +134,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.narayana.jta</groupId>
-            <artifactId>narayana-jta</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.spec.javax.transaction</groupId>
-            <artifactId>jboss-transaction-api_1.2_spec</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.easytesting</groupId>
-            <artifactId>fest-assert</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.jboss.shrinkwrap</groupId>
             <artifactId>shrinkwrap-impl-base</artifactId>
             <scope>test</scope>
@@ -162,11 +141,6 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -189,7 +163,37 @@
             <artifactId>byteman-install</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.transaction</groupId>
+            <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!-- 
+        <dependency>
+            <groupId>org.jboss.narayana.jta</groupId>
+            <artifactId>narayana-jta</artifactId>
+            <scope>test</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.easytesting</groupId>
+            <artifactId>fest-assert</artifactId>
+            <scope>test</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <scope>test</scope>
+        </dependency>
+         -->
     </dependencies>
+    
     <profiles>
         <!-- Executes the tests against a blueprint backend-->
         <profile>
@@ -217,5 +221,5 @@
                 <datastoreProvider>mapdb</datastoreProvider>
             </properties>
         </profile>
-</profiles>  
+    </profiles>  
 </project>

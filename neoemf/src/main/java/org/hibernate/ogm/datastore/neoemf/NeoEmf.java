@@ -24,8 +24,10 @@ import org.hibernate.ogm.options.navigation.spi.GenericOptionModel;
 
 /**
  * Allows to configure options specific to the NeoEmf data store.
+ * 
+ * @author Horacio Hoyos
  */
-public class NeoEmf implements  DatastoreConfiguration<GlobalContext<?, ?>> {
+public class NeoEmf implements DatastoreConfiguration<GlobalContext<?, ?>> {
 
 	/**
 	 * Short name of this data store provider.
@@ -34,12 +36,6 @@ public class NeoEmf implements  DatastoreConfiguration<GlobalContext<?, ?>> {
 	 */
 	public static final String DATASTORE_PROVIDER_NAME = "NEOEMF_EXPERIMENTAL";
 
-	/**
-	 * Gets the configuration builder.
-	 *
-	 * @param context the context
-	 * @return the configuration builder
-	 */
 	@Override
 	public GlobalContext<?, ?> getConfigurationBuilder(ConfigurationContext context) {
 		return GenericOptionModel.createGlobalContext( context );

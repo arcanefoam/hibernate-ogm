@@ -11,6 +11,7 @@ import static org.jboss.logging.Logger.Level.INFO;
 import java.io.IOException;
 
 import org.hibernate.HibernateException;
+import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
@@ -30,10 +31,10 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	void connectingToCassandra(String uri);
 
 	@Message(id = 4702, value = "Unable to load the resource.")
-	HibernateException unableToLoadResource(IOException e);
+	HibernateException unableToLoadResource(@Cause Exception e);
 	
 	@Message(id = 4703, value = "Unable to save the resource")
-	HibernateException unableToSaveResource(IOException e);
+	HibernateException unableToSaveResource(@Cause Exception e);
 
 	
 }

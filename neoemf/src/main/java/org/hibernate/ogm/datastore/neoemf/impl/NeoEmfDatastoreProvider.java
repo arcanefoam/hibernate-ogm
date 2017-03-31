@@ -6,17 +6,23 @@
  */
 package org.hibernate.ogm.datastore.neoemf.impl;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Map;
 
-
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.datastore.neoemf.NeoEmfDialect;
+import org.hibernate.ogm.datastore.neoemf.impl.configuration.NeoEmfConfiguration;
 import org.hibernate.ogm.datastore.neoemf.logging.impl.Log;
 import org.hibernate.ogm.datastore.neoemf.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
@@ -41,12 +47,15 @@ public class NeoEmfDatastoreProvider extends BaseDatastoreProvider implements St
 	private ServiceRegistryImplementor serviceRegistry;
 	
 	private Resource resource;
+
+	private NeoEmfConfiguration config;
 	
 	/* (non-Javadoc)
 	 * @see org.hibernate.ogm.datastore.spi.DatastoreProvider#getDefaultDialect()
 	 */
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
+		log.info("getDefaultDialect() ");
 		return NeoEmfDialect.class;
 	}
 
@@ -55,21 +64,14 @@ public class NeoEmfDatastoreProvider extends BaseDatastoreProvider implements St
 	 */
 	@Override
 	public void configure(Map configurationValues) {
+		log.info("configure() ");
+		OptionsService optionsService = serviceRegistry.getService( OptionsService.class );
 		ClassLoaderService classLoaderService = serviceRegistry.getService( ClassLoaderService.class );
 		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader(
 				configurationValues,
 				classLoaderService
 		);
-
-		// FIXME Read config!	
-//		try {
-//			this.config = new RedisConfiguration( propertyReader );
-//		}
-//		catch (Exception e) {
-//			// Wrap Exception in a ServiceException to make the stack trace more friendly
-//			// Otherwise a generic unable to request service is thrown
-//			throw log.unableToConfigureDatastoreProvider( e );
-//		}
+		config = new NeoEmfConfiguration( propertyReader, optionsService.context().getGlobalOptions() );
 		
 	}
 
@@ -100,16 +102,33 @@ public class NeoEmfDatastoreProvider extends BaseDatastoreProvider implements St
 	 */
 	@Override
 	public void start() {
-		try {
-			resource.load(CommonOptionsBuilder.noOption());
-		} catch (IOException e) {
-			throw log.unableToLoadResource( e );
+		String resource_name = config.getDatabaseName();
+		resource_name = resource_name.replaceAll("\\\\", "/");
+		URI resource_uri = URI.createURI(resource_name);
+		ResourceSet resourceSet = new ResourceSetImpl(); 
+		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap()
+				.put("xmi", new XMIResourceFactoryImpl());
+		if (config.isCreateDatabase()) {
+			resource = resourceSet.createResource(resource_uri);
 		}
-		
+		else {
+			try {
+				resource = resourceSet.getResource(resource_uri, true);
+			}
+			catch (RuntimeException e) {
+				throw log.unableToLoadResource( e );
+			}		
+		}
 	}
 
 	public Resource getConnection() {
 		return resource;
+	}
+
+	public void removeResource() {
+		ResourceSet rs = resource.getResourceSet();
+		rs.getResources().remove(resource);
+		resource.getContents().clear();
 	}
 
 }
