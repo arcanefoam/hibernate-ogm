@@ -1,0 +1,18 @@
+@namespace(uri="http://org.hibernate.ogm.backendtck.type/OgmEmf.ecore", prefix="ogmemf")
+package ogmemf;
+
+class Bookmark {
+  attr String description;
+  attr Character delimiter;
+  attr Integer stockCount;
+  attr Short urlPort;
+  attr Long userId;
+  attr Float visitRatio;
+  attr Double taxPercentage;
+  attr Boolean favourite;
+  attr Byte displayMask;
+  attr boolean isPrivate;
+  attr boolean isRead;
+  attr boolean isShared;
+}
+

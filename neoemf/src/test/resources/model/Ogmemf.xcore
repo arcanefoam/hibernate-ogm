@@ -1,0 +1,51 @@
+@Ecore(nsURI="http://org.hibernate.ogm.backendtck.type/OgmEmf.ecore")
+@GenModel(modelDirectory="/hibernate-ogm-neoemf/src/test/java-gen",
+    modelPluginID="",
+    modelName="OgmTest",
+    modelPluginClass="",
+    rootExtendsInterface="fr.inria.atlanmod.neoemf.core.PersistentEObject",
+    rootExtendsClass="fr.inria.atlanmod.neoemf.core.DefaultPersistentEObject",
+    reflectiveDelegation="true",
+    importerID="org.eclipse.emf.importer.ecore",
+    bundleManifest="false",
+    featureDelegation="Reflective",
+    complianceLevel="8.0"
+)
+package org.hibernate.ogm.backendtck.^type.ogmemf
+
+import java.util.UUID
+import fr.inria.atlanmod.neoemf.core.Id
+
+annotation "http://www.eclipse.org/emf/2002/Ecore" as Ecore
+annotation "http://www.eclipse.org/emf/2002/GenModel" as GenModel
+
+class Bookmark {
+    String description
+    Character delimiter
+    Integer stockCount
+    Short urlPort
+    Long userId
+    Float visitRatio
+    Double taxPercentage
+    Boolean favourite
+    Byte displayMask
+    boolean isPrivate
+    boolean isRead
+    boolean isShared
+    UUID serialNumber
+}
+
+type Id wraps Id
+
+type UUID wraps UUID
+create {
+    try {
+        if (it != null) UUID.fromString(it);
+    }
+    catch (IllegalArgumentException ex) {
+        throw new RuntimeException(ex);
+    }
+}
+convert {
+    if (it != null) it.toString();
+}

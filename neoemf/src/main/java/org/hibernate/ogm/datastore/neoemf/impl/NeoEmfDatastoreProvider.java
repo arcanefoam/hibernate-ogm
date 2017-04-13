@@ -6,15 +6,14 @@
  */
 package org.hibernate.ogm.datastore.neoemf.impl;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.datastore.neoemf.NeoEmfDialect;
 import org.hibernate.ogm.datastore.neoemf.impl.configuration.NeoEmfConfiguration;
@@ -30,11 +29,18 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.Startable;
 import org.hibernate.service.spi.Stoppable;
 
+import fr.inria.atlanmod.neoemf.data.PersistenceBackendFactoryRegistry;
+import fr.inria.atlanmod.neoemf.data.blueprints.BlueprintsPersistenceBackendFactory;
+import fr.inria.atlanmod.neoemf.data.blueprints.option.BlueprintsOptionsBuilder;
+import fr.inria.atlanmod.neoemf.data.blueprints.util.BlueprintsURI;
 import fr.inria.atlanmod.neoemf.option.CommonOptionsBuilder;
+import fr.inria.atlanmod.neoemf.resource.PersistentResource;
+import fr.inria.atlanmod.neoemf.resource.PersistentResourceFactory;
 
 
+// TODO: Auto-generated Javadoc
 /**
- * Provides access to NeoEmf
+ * Provides access to NeoEmf.
  *
  * @author Horacio Hoyos
  */
@@ -42,12 +48,16 @@ public class NeoEmfDatastoreProvider extends BaseDatastoreProvider implements St
 		ServiceRegistryAwareService, Configurable {
 	
 	
+	/** The logger. */
 	private static final Log log = LoggerFactory.getLogger();
 	
+	/** The service registry. */
 	private ServiceRegistryImplementor serviceRegistry;
 	
-	private Resource resource;
+	/** The resource that acts as the db connection. */
+	private PersistentResource  resource;
 
+	/** The configuration. */
 	private NeoEmfConfiguration config;
 	
 	/* (non-Javadoc)
@@ -55,7 +65,6 @@ public class NeoEmfDatastoreProvider extends BaseDatastoreProvider implements St
 	 */
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
-		log.info("getDefaultDialect() ");
 		return NeoEmfDialect.class;
 	}
 
@@ -64,7 +73,7 @@ public class NeoEmfDatastoreProvider extends BaseDatastoreProvider implements St
 	 */
 	@Override
 	public void configure(Map configurationValues) {
-		log.info("configure() ");
+		
 		OptionsService optionsService = serviceRegistry.getService( OptionsService.class );
 		ClassLoaderService classLoaderService = serviceRegistry.getService( ClassLoaderService.class );
 		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader(
@@ -72,7 +81,6 @@ public class NeoEmfDatastoreProvider extends BaseDatastoreProvider implements St
 				classLoaderService
 		);
 		config = new NeoEmfConfiguration( propertyReader, optionsService.context().getGlobalOptions() );
-		
 	}
 
 	/* (non-Javadoc)
@@ -102,29 +110,54 @@ public class NeoEmfDatastoreProvider extends BaseDatastoreProvider implements St
 	 */
 	@Override
 	public void start() {
+		
+		ResourceSet resourceSet = new ResourceSetImpl();
+		// Register the selected backend.
+		// FIXME Figure out why this is not working. This property should be set during configuration, but it 
+		// depends on NeoEmfTestHelper to be loadad and its static block executed. This is not happening at the
+		// moment. Thus the environment variable is not being copied to the properties map and hence is not
+		// available in the configuration
+		//String backend = config.getBackend();
+		String backend = System.getenv( "NEOEMF_BACKEND" );
 		String resource_name = config.getDatabaseName();
-		resource_name = resource_name.replaceAll("\\\\", "/");
-		URI resource_uri = URI.createURI(resource_name);
-		ResourceSet resourceSet = new ResourceSetImpl(); 
-		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap()
-				.put("xmi", new XMIResourceFactoryImpl());
-		if (config.isCreateDatabase()) {
-			resource = resourceSet.createResource(resource_uri);
-		}
-		else {
-			try {
-				resource = resourceSet.getResource(resource_uri, true);
+		Path resource_path = Paths.get(config.getHosts().getFirst().getHost(), resource_name);
+		try {
+			switch (backend) {
+			case "neo4j":
+				log.info("NeoEmf will use Neo4J backend");
+				PersistenceBackendFactoryRegistry
+					.register(BlueprintsURI.SCHEME, BlueprintsPersistenceBackendFactory.getInstance());
+				resourceSet.getResourceFactoryRegistry()
+					.getProtocolToFactoryMap().put(BlueprintsURI.SCHEME, PersistentResourceFactory.getInstance());
+				Path resoure_uri = resource_path.resolveSibling(resource_path.getFileName() + ".graphdb");
+				resource = (PersistentResource) resourceSet.createResource(BlueprintsURI.createFileURI(resoure_uri.toFile()));
+				break;
+				//FIXME Add other backends
 			}
-			catch (RuntimeException e) {
-				throw log.unableToLoadResource( e );
-			}		
+			if (!config.isCreateDatabase()) {
+				// Load the resource
+				resource.load(BlueprintsOptionsBuilder.noOption());
+			}
 		}
+		catch (RuntimeException e) {
+			throw log.unableToLoadResource( e );
+		} catch (IOException e) {
+			throw log.unableToLoadResource( e );
+		}		
 	}
 
+	/**
+	 * Gets the connection.
+	 *
+	 * @return the connection
+	 */
 	public Resource getConnection() {
 		return resource;
 	}
 
+	/**
+	 * Removes the resource.
+	 */
 	public void removeResource() {
 		ResourceSet rs = resource.getResourceSet();
 		rs.getResources().remove(resource);

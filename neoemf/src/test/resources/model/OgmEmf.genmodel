@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/hibernate-ogm-neoemf/src/test/java-gen" modelPluginID=""
+    redirection="" modelName="OgmTest" modelPluginClass="" rootExtendsInterface="fr.inria.atlanmod.neoemf.core.PersistentEObject"
+    rootExtendsClass="fr.inria.atlanmod.neoemf.core.DefaultPersistentEObject" reflectiveDelegation="true"
+    booleanFlagsField="" importerID="org.eclipse.emf.ecore.xcore.importer" bundleManifest="false"
+    featureDelegation="Reflective" complianceLevel="8.0" copyrightFields="false" usedGenPackages="../../../../../org.eclipse.emf.ecore/model/Ecore.genmodel#//ecore"
+    operationReflection="true" importOrganizing="true">
+  <foreignModel>Ogmemf.xcore</foreignModel>
+  <modelPluginVariables>NEOEMF=fr.inria.atlanmod.neoemf.core</modelPluginVariables>
+  <genPackages prefix="Ogmemf" basePackage="org.hibernate.ogm.backendtck.type" disposableProviderFactory="true"
+      contentTypeIdentifier="" ecorePackage="ogmemf.ecore#/" publicationLocation="">
+    <genDataTypes ecoreDataType="ogmemf.ecore#//Id"/>
+    <genDataTypes ecoreDataType="ogmemf.ecore#//UUID"/>
+    <genClasses ecoreClass="ogmemf.ecore#//Bookmark">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute ogmemf.ecore#//Bookmark/description"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute ogmemf.ecore#//Bookmark/delimiter"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute ogmemf.ecore#//Bookmark/stockCount"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute ogmemf.ecore#//Bookmark/urlPort"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute ogmemf.ecore#//Bookmark/userId"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute ogmemf.ecore#//Bookmark/visitRatio"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute ogmemf.ecore#//Bookmark/taxPercentage"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute ogmemf.ecore#//Bookmark/favourite"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute ogmemf.ecore#//Bookmark/displayMask"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute ogmemf.ecore#//Bookmark/isPrivate"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute ogmemf.ecore#//Bookmark/isRead"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute ogmemf.ecore#//Bookmark/isShared"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute ogmemf.ecore#//Bookmark/serialNumber"/>
+    </genClasses>
+  </genPackages>
+</genmodel:GenModel>

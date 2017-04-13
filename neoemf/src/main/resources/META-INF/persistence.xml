@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+             version="2.0">
+
+    <persistence-unit name="ogm_test_database" transaction-type="JTA">
+        <!-- Use Hibernate OGM provider: configuration will be transparent -->
+        <provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider>
+        <jta-data-source>java:/DefaultDS</jta-data-source>
+        <properties>
+            <property name="hibernate.transaction.jta.platform" value="JBossAS" />
+            <property name="hibernate.ogm.datastore.provider" value="org.hibernate.ogm.datastore.neoemf.impl.NeoEmfDatastoreProvider" />
+            <property name="hibernate.ogm.datastore.create_database" value="true" />
+        </properties>
+    </persistence-unit>
+</persistence>
+

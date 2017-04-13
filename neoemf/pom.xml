@@ -20,7 +20,9 @@
     <description>Persist objects in NeoEmf</description>
     <properties>
         <neoemf.version>1.0.1</neoemf.version>
-        <emf.version>2.12.0</emf.version>        
+        <emf.version>2.12.0</emf.version>
+        <!-- Emf Code generation -->
+        <generated-sources.location>${project.basedir}/src/test/java-gen/</generated-sources.location>
     </properties>
     <build>
         <plugins>
@@ -31,9 +33,16 @@
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <tasks>
+                        <echo>current active profile: ${neoemf.backend}</echo>
+                    </tasks>
+                    <environmentVariables>
+                        <NEOEMF_BACKEND>${neoemf.backend}</NEOEMF_BACKEND>
+                    </environmentVariables>
                     <dependenciesToScan>
                         <dependency>org.hibernate.ogm:hibernate-ogm-core</dependency>
                     </dependenciesToScan>
+                    <argLine>-Dibm.cl.verbose=*Preconditions</argLine>
 	            </configuration>
 	        </plugin>
 	        <plugin>
@@ -55,6 +64,25 @@
 	        <plugin>
 	             <artifactId>maven-checkstyle-plugin</artifactId>
 	        </plugin>
+	        <!-- Add Emf Model Code to build path -->
+	        <plugin>
+			    <groupId>org.codehaus.mojo</groupId>
+			    <artifactId>build-helper-maven-plugin</artifactId>
+			    <executions>
+			        <execution>
+			            <id>add-source</id>
+			            <phase>generate-sources</phase>
+			            <goals>
+			                <goal>add-source</goal>
+			            </goals>
+			            <configuration>
+			                <sources>
+			                    <source>${generated-sources.location}</source>
+			                </sources>
+			            </configuration>
+			        </execution>
+			    </executions>
+			</plugin>
 	    </plugins>
     </build>
   
@@ -78,6 +106,16 @@
 				<artifactId>commons-io</artifactId>
 				<version>2.5</version>
             </dependency>
+            <dependency>
+                <groupId>commons-configuration</groupId>
+                <artifactId>commons-configuration</artifactId>
+                <version>1.6</version>
+            </dependency>
+            <dependency>
+	            <groupId>com.google.guava</groupId>
+	            <artifactId>guava</artifactId>
+	            <version>20.0</version>
+	        </dependency>
         </dependencies>
     </dependencyManagement>
   
@@ -96,16 +134,15 @@
         <!-- NeoEmf and Emf -->
         <dependency>
             <groupId>fr.inria.atlanmod.neoemf</groupId>
-            <artifactId>neoemf</artifactId>
-            <version>${neoemf.version}</version>
-            <type>pom</type>
-        </dependency>
-        <dependency>
-        <groupId>fr.inria.atlanmod.neoemf</groupId>
 	        <artifactId>neoemf-core</artifactId>
 	        <version>${neoemf.version}</version>
 	    </dependency>
-        <dependency>
+	    <dependency>
+		    <groupId>fr.inria.atlanmod.neoemf</groupId>
+		    <artifactId>neoemf-data-blueprints-core</artifactId>
+		    <version>${neoemf.version}</version>
+		</dependency>
+		<dependency>
             <groupId>org.eclipse.emf</groupId>
             <artifactId>org.eclipse.emf.common</artifactId>
             <version>${emf.version}</version>
@@ -120,7 +157,12 @@
             <artifactId>org.eclipse.emf.ecore.xmi</artifactId>
             <version>${emf.version}</version>
         </dependency>
-    
+	    <dependency>
+		    <groupId>org.eclipse.xtext</groupId>
+		    <artifactId>org.eclipse.xtext.xbase.lib</artifactId>
+		    <version>2.11.0</version>
+	    </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>junit</groupId>
@@ -168,13 +210,12 @@
             <artifactId>jboss-transaction-api_1.2_spec</artifactId>
             <scope>provided</scope>
         </dependency>
-        <!-- 
         <dependency>
             <groupId>org.jboss.narayana.jta</groupId>
             <artifactId>narayana-jta</artifactId>
             <scope>test</scope>
         </dependency>
-        
+        <!--
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
@@ -185,41 +226,36 @@
             <artifactId>fest-assert</artifactId>
             <scope>test</scope>
         </dependency>
-        
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <scope>test</scope>
-        </dependency>
          -->
     </dependencies>
     
     <profiles>
         <!-- Executes the tests against a blueprint backend-->
         <profile>
-            <id>blueprint</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
+            <id>neo4j</id>
             <properties>
-                <datastoreProvider>blueprint_neo4j</datastoreProvider>
+                <neoemf.backend>neo4j</neoemf.backend>
             </properties>
         </profile>
 
-        <!-- Executes the tests against a HBase backend -->
+        <!-- Executes the tests against a HBase backend 
         <profile>
             <id>hbase</id>
-            <properties>
-                <datastoreProvider>hbase</datastoreProvider>
-            </properties>
+            <environmentVariables>
+                <NEOEMF_BACKEND>hbase</NEOEMF_BACKEND>
+            </environmentVariables>
         </profile>
-
-        <!-- Executes the tests against a MapDB -->
+        -->
+        <!-- Executes the tests against a MapDB 
         <profile>
             <id>mapdb</id>
-            <properties>
-                <datastoreProvider>mapdb</datastoreProvider>
-            </properties>
+            <environmentVariables>
+                <NEOEMF_BACKEND>mapdb</NEOEMF_BACKEND>
+            </environmentVariables>
         </profile>
+        -->
     </profiles>  
 </project>

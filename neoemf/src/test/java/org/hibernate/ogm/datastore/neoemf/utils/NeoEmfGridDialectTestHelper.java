@@ -16,9 +16,11 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.neoemf.NeoEmf;
 import org.hibernate.ogm.datastore.neoemf.NeoEmfDialect;
+import org.hibernate.ogm.datastore.neoemf.NeoEmfProperties;
 import org.hibernate.ogm.datastore.neoemf.impl.NeoEmfDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
@@ -31,7 +33,31 @@ import org.hibernate.ogm.utils.GridDialectTestHelper;
  *
  * @author Horacio Hoyos
  */
-public class NeoEmfTestHelper implements GridDialectTestHelper {
+public class NeoEmfGridDialectTestHelper implements GridDialectTestHelper {
+	
+	/**
+	 * An environment variable that can be used to defined the preferred back end to use with NeoEmf 
+	 */
+	private static final String ENV_NEOEMF_BACKEND = "NEOEMF_BACKEND";
+
+	static {
+		// Read Persistence Backend Factory from environment variable
+		String neoemfBackend = System.getenv( ENV_NEOEMF_BACKEND );
+		// 
+		if ( isNotNull( neoemfBackend ) ) {
+			System.getProperties().setProperty( NeoEmfProperties.BACKEND, neoemfBackend );
+		}
+	}
+	
+	/**
+	 * Maven's surefire plugin sets undefned environment variables to the string 'null'.
+	 *
+	 * @param neoemfBackend the neoemf backend
+	 * @return True if the neoemfBackend value is not null or if it is not the string 'null'
+	 */
+	private static boolean isNotNull(String neoemfBackend) {
+		return neoemfBackend != null && neoemfBackend.length() > 0 && !"null".equals( neoemfBackend );
+	}
 
 	@Override
 	public boolean backendSupportsTransactions() {
@@ -120,6 +146,29 @@ public class NeoEmfTestHelper implements GridDialectTestHelper {
 			}
 		}
 		return count;
+	}
+	
+	/**
+	 * Returns a {@code RowAssertionBuilder} to check a particular row.
+	 *
+	 * @param sessionFactory the sessionFactory
+	 * @param table the table on which the row is located
+	 * @return a {@code RowAssertionBuilder} to construct the assertion
+	 */
+	public static RowAssertionBuilder rowAssertion(OgmSessionFactory sessionFactory, String table) {
+		return new RowAssertionBuilder( sessionFactory, table );
+	}
+	
+	public static class RowAssertionBuilder {
+		
+		private String table;
+		private OgmSessionFactory sessionFactory;
+
+		public RowAssertionBuilder(OgmSessionFactory sessionFactory, String table) {
+			this.sessionFactory = sessionFactory;
+			this.table = table;
+		}
+
 	}
 
 }
